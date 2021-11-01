@@ -49,6 +49,57 @@ impl epi::App for DecompApp {
             decompose,
         } = self;
 
+
+        
+        egui::SidePanel::left("side_panel")
+            .frame(egui::Frame::default().fill(egui::Color32::from_rgb(255, 255, 255)))
+            .show(ctx, |ui| {
+                ui.heading("POLYDECOMP");
+                ui.separator();
+
+
+                ui.horizontal(|ui| {
+                    ui.heading("polygon");
+                    
+                    if ui.button("load").clicked() {
+
+                    }
+                    if ui.button("draw").clicked() {
+                        
+                    }
+                });
+
+                ui.separator();
+
+                ui.horizontal(|ui| {
+                    ui.heading("triangulation");
+                    if ui.button("show").clicked() {
+
+                    }
+                });
+
+                ui.separator();
+
+                ui.horizontal(|ui| {
+                    ui.heading("decomposition");
+                    if ui.button("show").clicked() {
+                        
+                    }
+                });
+
+                ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
+                    ui.horizontal(|ui| {
+                        ui.spacing_mut().item_spacing.x = 0.0;
+                        ui.small("powered by ");
+                        ui.add(egui::Hyperlink::new("https://github.com/emilk/egui")
+                          .text("egui").small());
+                        ui.small(" and ");
+                        ui.add(egui::Hyperlink::new("https://github.com/emilk/egui/tree/master/eframe")
+                          .text("eframe").small());
+                    });
+                });
+            });
+
         
     }
 }

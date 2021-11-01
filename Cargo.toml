@@ -5,6 +5,5 @@ members = [
     "egui-lib",
     "polygon",
     "hm-algo",
-    "puma",
 ]
 
