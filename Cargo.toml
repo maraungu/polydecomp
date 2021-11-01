@@ -1,0 +1,10 @@
+[workspace]
+
+members = [
+    "egui-app",
+    "egui-lib",
+    "polygon",
+    "hm-algo",
+    "puma",
+]
+
