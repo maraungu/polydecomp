@@ -1,5 +1,5 @@
+use eframe::egui::{Color32, Stroke};
 use eframe::{egui, epi};
-use eframe::egui::{Stroke, Color32};
 
 use crate::draw::{self, PolyDraw};
 
@@ -72,14 +72,13 @@ impl epi::App for DecompApp {
                 egui::Frame::default()
                     .fill(egui::Color32::from_rgb(255, 255, 255))
                     .margin(egui::Vec2 { x: 10.0, y: 10.0 })
-                    .stroke(Stroke::new(1.0, Color32::BLACK))
+                    .stroke(Stroke::new(1.0, Color32::BLACK)),
             )
             .show(ctx, |ui| {
                 ui.heading("POLYDECOMP");
                 ui.separator();
 
-                egui::Grid::new("polys").min_col_width(0.0)
-                .show(ui, |ui| {
+                egui::Grid::new("polys").min_col_width(0.0).show(ui, |ui| {
                     ui.heading("polygon");
                     ui.end_row();
                     ui.label("load polygon");
@@ -105,7 +104,6 @@ impl epi::App for DecompApp {
                     if ui.button("🔃").clicked() {
                         reset_poly = true;
                     }
-
                 });
 
                 ui.separator();
@@ -147,14 +145,12 @@ impl epi::App for DecompApp {
                 });
             });
 
-        
-        
         egui::CentralPanel::default()
             .frame(
                 egui::Frame::default()
                     .fill(egui::Color32::from_rgb(255, 255, 255))
-                    .stroke(Stroke::new(1.0, Color32::BLACK))
-                )
+                    .stroke(Stroke::new(1.0, Color32::BLACK)),
+            )
             .show(ctx, |ui| {
                 if *draw_poly {
                     dbg!(draw_poly);
