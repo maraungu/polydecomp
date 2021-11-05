@@ -1,16 +1,18 @@
 use eframe::egui::{Color32, Stroke};
 use eframe::{egui, epi};
+use egui::math::Pos2;
 
 use crate::draw::PolyDraw;
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(default))]
 pub struct DecompApp {
-    load_poly: bool,
+    loaded_poly: bool,
     selected_poly: String,
     poly_list: Vec<String>,
-    draw_poly: bool,
     drawing_app: PolyDraw,
+    //save_your_poly: bool,
+    your_poly: Vec<Pos2>,
     triangulate: bool,
     decompose: bool,
 }
@@ -18,15 +20,17 @@ pub struct DecompApp {
 impl Default for DecompApp {
     fn default() -> Self {
         Self {
-            load_poly: false,
+            loaded_poly: false,
             selected_poly: "select a polygon".to_string(),
             poly_list: vec![
                 "select a polygon".to_string(),
                 "polygon1".to_string(),
                 "polygon2".to_string(),
+                "your polygon".to_string(),
             ],
-            draw_poly: false,
             drawing_app: PolyDraw::default(),
+            //save_your_poly: false,
+            your_poly: Vec::new(),
             triangulate: false,
             decompose: false,
         }
@@ -56,17 +60,20 @@ impl epi::App for DecompApp {
 
     fn update(&mut self, ctx: &egui::CtxRef, frame: &mut epi::Frame<'_>) {
         let Self {
-            load_poly,
+           
+            loaded_poly,
             selected_poly,
             poly_list,
-            draw_poly,
-            // drawing_app,
+            //save_your_poly,
             triangulate,
             decompose,
             ..
         } = self;
 
-        let mut reset_poly = false;
+        let mut save_your_poly = false;
+        let mut clear_poly = false;
+        let drawing_stuff = &mut self.drawing_app;
+        let the_saved_poly = self.your_poly.clone();
 
         egui::SidePanel::left("side_panel")
             .frame(
@@ -87,23 +94,33 @@ impl epi::App for DecompApp {
                         .selected_text(format!("{:}", selected_poly))
                         .show_ui(ui, |ui| {
                             for poly in poly_list.iter() {
-                                ui.selectable_value(
+                                let response = ui.selectable_value(
                                     selected_poly,
                                     poly.to_string(),
                                     poly.to_string(),
                                 );
+                                if response.changed() {
+                                    *loaded_poly = false;
+                                }
                             }
                         });
                     ui.end_row();
-                    ui.label("draw");
-                    if ui.button("🖊").clicked() {
-                        *draw_poly = true;
-                        *load_poly = false;
+                    
+                    ui.label("undo");
+                    if ui.button("⟲").clicked() {
+                        let length = drawing_stuff.points.len();
+                        dbg!(length);
+                        drawing_stuff.points.remove(length - 1);
                     }
                     ui.end_row();
-                    ui.label("reset");
+                    ui.label("save");
+                    if ui.button("💾").clicked() {
+                        save_your_poly = true;
+                    }
+                    ui.end_row();
+                    ui.label("clear");
                     if ui.button("🔃").clicked() {
-                        reset_poly = true;
+                        clear_poly = true;
                     }
                 });
 
@@ -146,8 +163,6 @@ impl epi::App for DecompApp {
                 });
             });
 
-        let drawing_stuff = &mut self.drawing_app;
-
         egui::CentralPanel::default()
             .frame(
                 egui::Frame::default()
@@ -155,14 +170,58 @@ impl epi::App for DecompApp {
                     .stroke(Stroke::new(1.0, Color32::BLACK)),
             )
             .show(ctx, |ui| {
-                if *draw_poly {
-                    dbg!(draw_poly);
-                    // ui.add(drawing_app);
-                    drawing_stuff.ui_content(ui);
+                ui.label("to draw a polygon add the vertices by clicking on the canvas or load one of the default ones");
+                match selected_poly.as_str() {
+                    "polygon1" => {
+                        if !*loaded_poly {
+                            drawing_stuff.points =
+                                vec![Pos2::from([600.0, 350.0]), Pos2::from([500.0, 450.0])];
+                            drawing_stuff.ui_content(ui);
+                        }
+                        else {
+                            drawing_stuff.ui_content(ui);
+                        }
+                        *loaded_poly = true;
+                    }
+                    "polygon2" => {
+                        if !*loaded_poly {
+                            drawing_stuff.points =
+                                vec![Pos2::from([330.0, 170.0]), 
+                                    Pos2::from([340.0, 390.0]),
+                                    Pos2::from([555.0, 390.0]),
+                                    Pos2::from([465.0, 330.0]),
+                                    Pos2::from([460.0, 255.0]),
+                                    Pos2::from([515.0, 167.0])];
+                            drawing_stuff.ui_content(ui);
+                        }
+                        else {
+                            drawing_stuff.ui_content(ui);
+                        }
+                        *loaded_poly = true;
+                    }
+                    "your polygon" => {
+                        if !*loaded_poly //&& self.your_poly != vec![] 
+                        {
+                            drawing_stuff.points = the_saved_poly;
+                                
+                            drawing_stuff.ui_content(ui);
+                        }
+                        else {
+                            drawing_stuff.ui_content(ui);
+                        }
+                        *loaded_poly = true;
+                    }
+                    _ => {
+                        drawing_stuff.ui_content(ui);
+                    }
                 }
             });
-        if reset_poly {
-            *self = DecompApp::default();
+        if save_your_poly {
+            self.your_poly = drawing_stuff.points.clone();
+        }
+        if clear_poly {
+            //*self = DecompApp::default();
+            drawing_stuff.points.clear();
         }
     }
 }
