@@ -145,9 +145,9 @@ impl epi::App for DecompApp {
                     });
                 });
             });
-        
+
         let drawing_stuff = &mut self.drawing_app;
-        
+
         egui::CentralPanel::default()
             .frame(
                 egui::Frame::default()

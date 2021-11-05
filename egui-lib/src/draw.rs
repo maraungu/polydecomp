@@ -1,9 +1,8 @@
-use eframe::egui::*;
 use eframe::egui::epaint::CircleShape;
+use eframe::egui::*;
 use eframe::{egui, epi};
 
 use plot::{Line, Plot, Points, Value, Values};
-
 
 use std::f64::consts::TAU;
 use std::vec;
@@ -25,6 +24,7 @@ pub struct PolyDraw {
     edges: Line,
     //point: Pos2,
     point: Pos2,
+    points: Vec<Pos2>,
 }
 
 impl Default for PolyDraw {
@@ -32,7 +32,7 @@ impl Default for PolyDraw {
         Self {
             edges: Line::new(Values::default()),
             point: Pos2::new(0.0, 0.0),
-            // points: Points::new(Values::default()),
+            points: Vec::new(),
         }
     }
 }
@@ -43,11 +43,9 @@ impl PolyDraw {
             edges,
             // point,
             point,
+            points,
         } = self;
     }
-
-    
-    
 
     pub fn ui_content(&mut self, ui: &mut Ui) -> Response {
         let (mut response, painter) =
@@ -58,33 +56,51 @@ impl PolyDraw {
             response.rect,
         );
         let from_screen = to_screen.inverse();
-    
-    
+
         let mut point_shapes: Vec<Shape> = vec![];
-        
+        let mut points_shapes: Vec<Shape> = vec![];
+        let mut lines_shapes: Vec<Shape> = vec![];
+
         if let Some(pointer_pos) = response.interact_pointer_pos() {
             self.point = pointer_pos;
             dbg!(pointer_pos);
+            self.points.push(pointer_pos);
             let canvas_pos = from_screen * pointer_pos;
             dbg!(canvas_pos);
             // self.point = canvas_pos;
-            point_shapes.push(Shape::Circle(CircleShape { 
-                center: pointer_pos,
-                radius: 5.0,
-                fill: Color32::BLACK,
-                stroke: Default::default(),
-            }));
-
+            // point_shapes.push(Shape::Circle(CircleShape {
+            //     center: pointer_pos,
+            //     radius: 5.0,
+            //     fill: Color32::BLACK,
+            //     stroke: Default::default(),
+            // }));
         }
 
-        point_shapes.push(Shape::Circle(CircleShape { 
+        for (idx, point) in self.points.iter().enumerate() {
+            lines_shapes.push(Shape::LineSegment {
+                points: [*point, self.points[(idx + 1) % self.points.len()]],
+                stroke: Stroke { width: 1.0, color: Color32::BLACK },
+            })
+        }
+
+        for point in self.points.iter() {
+            points_shapes.push(Shape::Circle(CircleShape {
+                center: *point,
+                radius: 5.0,
+                fill: Color32::DARK_GRAY,
+                stroke: Default::default(),
+            }));
+        }
+
+        point_shapes.push(Shape::Circle(CircleShape {
             center: self.point,
             radius: 5.0,
-            fill: Color32::BLACK,
+            fill: Color32::LIGHT_GRAY,
             stroke: Default::default(),
         }));
 
-        painter.extend(point_shapes);
+        painter.extend(points_shapes);
+        painter.extend(lines_shapes);
 
         response
     }
@@ -94,8 +110,6 @@ impl PolyDraw {
 //     fn ui(self, ui: &mut Ui) -> Response {
 //         self.options_ui(ui);
 
-        
-
 //         let mut  response = ui.interact(Rect::EVERYTHING, plot_id, Sense::click());
 //         if let Some(pointer_pos) = response.interact_pointer_pos() {
 //             dbg!(pointer_pos);
@@ -103,14 +117,10 @@ impl PolyDraw {
 //             //let some_value = ScreenTransform::value_from_position(pointer_pos);
 //         }
 
-        
-
 //         let marker = Points::new(Values::from_values(vec![Value::new(0.0, 0.0)]))
 //             .shape(plot::MarkerShape::Diamond)
 //             .color(Color32::BLACK)
 //             .radius(5.0);
-
-        
 
 //         // dbg!(winit::MouseInput::press_origin());
 //         // let (response, painter) =
