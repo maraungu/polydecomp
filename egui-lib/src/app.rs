@@ -1,7 +1,7 @@
 use eframe::egui::{Color32, Stroke};
 use eframe::{egui, epi};
 
-use crate::draw::{self, PolyDraw};
+use crate::draw::PolyDraw;
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(default))]
@@ -60,9 +60,10 @@ impl epi::App for DecompApp {
             selected_poly,
             poly_list,
             draw_poly,
-            drawing_app,
+            // drawing_app,
             triangulate,
             decompose,
+            ..
         } = self;
 
         let mut reset_poly = false;
@@ -144,7 +145,9 @@ impl epi::App for DecompApp {
                     });
                 });
             });
-
+        
+        let drawing_stuff = &mut self.drawing_app;
+        
         egui::CentralPanel::default()
             .frame(
                 egui::Frame::default()
@@ -154,7 +157,8 @@ impl epi::App for DecompApp {
             .show(ctx, |ui| {
                 if *draw_poly {
                     dbg!(draw_poly);
-                    ui.add(drawing_app);
+                    // ui.add(drawing_app);
+                    drawing_stuff.ui_content(ui);
                 }
             });
         if reset_poly {
