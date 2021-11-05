@@ -1,18 +1,18 @@
 use eframe::egui::*;
 use eframe::{egui, epi};
 
-
 use plot::{Line, Plot, Points, Value, Values};
+
 
 use std::f64::consts::TAU;
 
 pub struct DrawPoint {
-    point: Pos2
+    point: Pos2,
 }
 
 impl Default for DrawPoint {
     fn default() -> Self {
-        Self{
+        Self {
             point: Pos2::new(0.0, 0.0),
         }
     }
@@ -77,11 +77,22 @@ impl Widget for &mut PolyDraw {
         let mut actual_plot = plot.line(self.polygon());
 
         let plot_id = ui.make_persistent_id("poly_demo");
-        
+
         let response = ui.interact(Rect::EVERYTHING, plot_id, Sense::click());
         if let Some(pointer_pos) = response.interact_pointer_pos() {
             dbg!(pointer_pos);
+
+            //let some_value = ScreenTransform::value_from_position(pointer_pos);
         }
+
+        
+
+        let marker = Points::new(Values::from_values(vec![Value::new(0.0, 0.0)]))
+            .shape(plot::MarkerShape::Diamond)
+            .color(Color32::BLACK)
+            .radius(5.0);
+
+        let actual_plot = actual_plot.points(marker).include_x(0.0);
 
         // dbg!(winit::MouseInput::press_origin());
         // let (response, painter) =
