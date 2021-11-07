@@ -2,7 +2,7 @@ use eframe::egui::{Color32, Stroke};
 use eframe::{egui, epi};
 use egui::math::Pos2;
 
-use crate::draw::PolyDraw;
+use crate::draw::{self, PolyDraw};
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(default))]
@@ -171,45 +171,32 @@ impl epi::App for DecompApp {
             )
             .show(ctx, |ui| {
                 ui.label("to draw a polygon add the vertices by clicking on the canvas or load one of the default ones");
+                
+                let mut draw_chosen_polygon = |poly: Vec<Pos2>| {
+                    if !*loaded_poly {
+                        drawing_stuff.points = poly;
+                        drawing_stuff.ui_content(ui);
+                    }
+                    else {
+                        drawing_stuff.ui_content(ui);
+                    }
+                    *loaded_poly = true;
+                };
+                
                 match selected_poly.as_str() {
                     "polygon1" => {
-                        if !*loaded_poly {
-                            drawing_stuff.points =
-                                vec![Pos2::from([600.0, 350.0]), Pos2::from([500.0, 450.0])];
-                            drawing_stuff.ui_content(ui);
-                        }
-                        else {
-                            drawing_stuff.ui_content(ui);
-                        }
-                        *loaded_poly = true;
+                        draw_chosen_polygon(vec![Pos2::from([600.0, 350.0]), Pos2::from([500.0, 450.0])]);
                     }
                     "polygon2" => {
-                        if !*loaded_poly {
-                            drawing_stuff.points =
-                                vec![Pos2::from([330.0, 170.0]), 
+                        draw_chosen_polygon(vec![Pos2::from([330.0, 170.0]), 
                                     Pos2::from([340.0, 390.0]),
                                     Pos2::from([555.0, 390.0]),
                                     Pos2::from([465.0, 330.0]),
                                     Pos2::from([460.0, 255.0]),
-                                    Pos2::from([515.0, 167.0])];
-                            drawing_stuff.ui_content(ui);
-                        }
-                        else {
-                            drawing_stuff.ui_content(ui);
-                        }
-                        *loaded_poly = true;
+                                    Pos2::from([515.0, 167.0])]);
                     }
                     "your polygon" => {
-                        if !*loaded_poly //&& self.your_poly != vec![] 
-                        {
-                            drawing_stuff.points = the_saved_poly;
-                                
-                            drawing_stuff.ui_content(ui);
-                        }
-                        else {
-                            drawing_stuff.ui_content(ui);
-                        }
-                        *loaded_poly = true;
+                        draw_chosen_polygon(the_saved_poly);
                     }
                     _ => {
                         drawing_stuff.ui_content(ui);
