@@ -3,6 +3,7 @@ use eframe::{egui, epi};
 use egui::math::Pos2;
 
 use crate::draw::{self, PolyDraw};
+use polygon::poly::Poly;
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(default))]
@@ -72,6 +73,7 @@ impl epi::App for DecompApp {
 
         let mut save_your_poly = false;
         let mut clear_poly = false;
+        let mut triangulate_poly = false;
         let drawing_stuff = &mut self.drawing_app;
         let the_saved_poly = self.your_poly.clone();
 
@@ -130,6 +132,10 @@ impl epi::App for DecompApp {
                     ui.heading("triangulation");
                     if ui.button("show").clicked() {
                         *triangulate = true;
+                        triangulate_poly = true;
+                        drawing_stuff.polygon.triang();
+                        // smth like
+                        // drawing_stuff.triangles = drawing_stuff.polygon.triang();
                     }
                 });
 
@@ -209,6 +215,7 @@ impl epi::App for DecompApp {
         if clear_poly {
             //*self = DecompApp::default();
             drawing_stuff.points.clear();
+            drawing_stuff.polygon = Poly::default();
         }
     }
 }
