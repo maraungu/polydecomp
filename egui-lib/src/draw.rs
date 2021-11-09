@@ -22,18 +22,20 @@ impl Default for PolyDraw {
 
 impl PolyDraw {
     pub fn ui_content(&mut self, ui: &mut Ui) -> Response {
-        let (mut response, painter) =
+        let (response, painter) =
             ui.allocate_painter(ui.available_size_before_wrap(), Sense::click());
 
-        let to_screen = emath::RectTransform::from_to(
-            Rect::from_center_size(Pos2::ZERO, response.rect.square_proportions()),
-            response.rect,
-        );
-        let from_screen = to_screen.inverse();
+        // let to_screen = emath::RectTransform::from_to(
+        //     Rect::from_center_size(Pos2::ZERO, response.rect.square_proportions()),
+        //     response.rect,
+        // );
+        // let from_screen = to_screen.inverse();
 
         let mut points_shapes: Vec<Shape> = vec![];
         let mut lines_shapes: Vec<Shape> = vec![];
         let mut triangles_shapes: Vec<Shape> = vec![];
+
+        
 
         // poly vertices drawn by clicking on canvas
         if let Some(mut pointer_pos) = response.interact_pointer_pos() {
@@ -100,15 +102,15 @@ impl PolyDraw {
                             width: 1.0,
                             color: Color32::BLACK,
                         },
-                    ), //Stroke::none(),)
+                    ), 
                 );
             };
 
             match idx % 4 {
-                0 => colour_triangles(Color32::BLUE),
-                1 => colour_triangles(Color32::GOLD),
-                2 => colour_triangles(Color32::RED),
-                _ => colour_triangles(Color32::GREEN),
+                0 => colour_triangles(Color32::from_rgba_premultiplied(78, 91, 207, 255)),
+                1 => colour_triangles(Color32::from_rgba_premultiplied(212, 158, 11, 255)),
+                2 => colour_triangles(Color32::from_rgba_premultiplied(115, 23, 43, 255)),
+                _ => colour_triangles(Color32::from_rgba_premultiplied(52, 133, 75, 255)),
             }
 
             // triangles_shapes.push(Shape::convex_polygon(

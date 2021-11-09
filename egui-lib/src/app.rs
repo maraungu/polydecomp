@@ -111,7 +111,13 @@ impl epi::App for DecompApp {
                     if ui.button("⟲").clicked() {
                         let length = drawing_stuff.points.len();
                         dbg!(length);
-                        drawing_stuff.points.remove(length - 1);
+                        if length >= 1 {
+                            drawing_stuff.points.remove(length - 1);
+                            drawing_stuff.polygon.vertices.remove(length - 1);
+                            drawing_stuff.polygon.triangles = vec![];
+                            // dbg!(&drawing_stuff.points);
+                            // dbg!(&drawing_stuff.polygon.vertices);
+                        }
                     }
                     ui.end_row();
                     ui.label("save");
@@ -159,9 +165,9 @@ impl epi::App for DecompApp {
                         ui.small(" and ");
                         ui.add(
                             egui::Hyperlink::new(
-                                "https://github.com/emilk/egui/tree/master/eframe",
+                                "https://github.com/Stoeoef/spade",
                             )
-                            .text("eframe")
+                            .text("spade")
                             .small(),
                         );
                     });
@@ -180,6 +186,10 @@ impl epi::App for DecompApp {
                 let mut draw_chosen_polygon = |poly: Vec<Pos2>| {
                     if !*loaded_poly {
                         drawing_stuff.points = poly;
+                        for point in drawing_stuff.points.iter() {
+                            drawing_stuff.polygon.vertices.push([point.x, -point.y]);
+                        }
+                        //drawing_stuff.polygon.vertices = 
                         drawing_stuff.ui_content(ui);
                     }
                     else {
