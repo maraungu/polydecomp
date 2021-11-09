@@ -1,14 +1,14 @@
 use eframe::egui::epaint::CircleShape;
 use eframe::egui::*;
-use std::vec;
 use polygon::poly::Poly;
+use std::vec;
 
 // we try here like in painting demo
 
 pub struct PolyDraw {
-  pub points: Vec<Pos2>,
-  pub polygon: Poly,
-  // triangles: Vec<Vec<Pos2>>
+    pub points: Vec<Pos2>,
+    pub polygon: Poly,
+    // triangles: Vec<Vec<Pos2>>
 }
 
 impl Default for PolyDraw {
@@ -37,33 +37,29 @@ impl PolyDraw {
 
         // poly vertices drawn by clicking on canvas
         if let Some(mut pointer_pos) = response.interact_pointer_pos() {
-            
-            dbg!(pointer_pos);
+            //dbg!(pointer_pos);
             // truncating...otherwise get point repetition due to
             // too high precision
             pointer_pos = Pos2::from([
-                f32::trunc(pointer_pos.x * 10.0) / 10.0 ,
-                f32::trunc(pointer_pos.y * 10.0) / 10.0
+                f32::trunc(pointer_pos.x * 10.0) / 10.0,
+                f32::trunc(pointer_pos.y * 10.0) / 10.0,
             ]);
-            dbg!(pointer_pos);
+            //dbg!(pointer_pos);
 
             if !self.points.contains(&pointer_pos) {
                 self.points.push(pointer_pos);
-                dbg!(&self.points);
-                
+                //dbg!(&self.points);
+
                 // let canvas_pos = from_screen * pointer_pos;
                 // dbg!(canvas_pos);
                 // let new_canvas_pos = [canvas_pos.x, -canvas_pos.y];
                 // dbg!(new_canvas_pos);
                 // // TODO: truncate this too
                 // self.polygon.vertices.push(new_canvas_pos);
-                
+
                 let transformed_pos: [f32; 2] = [pointer_pos.x, -pointer_pos.y];
                 self.polygon.vertices.push(transformed_pos);
-                
             }
-
-            
         }
 
         // poly edges drawn by connecting the vertices in order
@@ -90,28 +86,34 @@ impl PolyDraw {
             let points_for_shape: Vec<Pos2> = vec![
                 Pos2::from([triangle[0].x, -triangle[0].y]),
                 Pos2::from([triangle[1].x, -triangle[1].y]),
-                Pos2::from([triangle[2].x, -triangle[2].y])
+                Pos2::from([triangle[2].x, -triangle[2].y]),
             ];
-            dbg!(&points_for_shape);
-            
+            //dbg!(&points_for_shape);
+            //dbg!(idx);
+
             let colour_triangles = |colour: Color32| {
-                triangles_shapes.push(Shape::convex_polygon(
-                    points_for_shape,
-                    colour, 
-                    Stroke::none(),)
+                triangles_shapes.push(
+                    Shape::convex_polygon(
+                        points_for_shape,
+                        colour,
+                        Stroke {
+                            width: 1.0,
+                            color: Color32::BLACK,
+                        },
+                    ), //Stroke::none(),)
                 );
             };
 
-            match idx % 3 {
+            match idx % 4 {
                 0 => colour_triangles(Color32::BLUE),
                 1 => colour_triangles(Color32::GOLD),
                 2 => colour_triangles(Color32::RED),
-                _ => colour_triangles(Color32::BLUE),
+                _ => colour_triangles(Color32::GREEN),
             }
 
             // triangles_shapes.push(Shape::convex_polygon(
             //     points_for_shape,
-            //     Color32::BLUE, 
+            //     Color32::BLUE,
             //     Stroke::none(),)
             // );
         }

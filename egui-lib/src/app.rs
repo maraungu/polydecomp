@@ -61,7 +61,6 @@ impl epi::App for DecompApp {
 
     fn update(&mut self, ctx: &egui::CtxRef, frame: &mut epi::Frame<'_>) {
         let Self {
-           
             loaded_poly,
             selected_poly,
             poly_list,
@@ -107,7 +106,7 @@ impl epi::App for DecompApp {
                             }
                         });
                     ui.end_row();
-                    
+
                     ui.label("undo");
                     if ui.button("⟲").clicked() {
                         let length = drawing_stuff.points.len();
@@ -192,21 +191,21 @@ impl epi::App for DecompApp {
                 match selected_poly.as_str() {
                     "polygon1" => {
                         draw_chosen_polygon(vec![Pos2::from([600.0, 350.0]), Pos2::from([500.0, 450.0])]);
-                    }
+                    },
                     "polygon2" => {
-                        draw_chosen_polygon(vec![Pos2::from([330.0, 170.0]), 
+                        draw_chosen_polygon(vec![Pos2::from([330.0, 170.0]),
                                     Pos2::from([340.0, 390.0]),
                                     Pos2::from([555.0, 390.0]),
                                     Pos2::from([465.0, 330.0]),
                                     Pos2::from([460.0, 255.0]),
                                     Pos2::from([515.0, 167.0])]);
-                    }
+                    },
                     "your polygon" => {
                         draw_chosen_polygon(the_saved_poly);
-                    }
+                    },
                     _ => {
                         drawing_stuff.ui_content(ui);
-                    }
+                    },
                 }
             });
         if save_your_poly {
