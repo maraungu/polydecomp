@@ -1,28 +1,18 @@
-//extern crate spade;
-
 use std::collections::{HashMap, HashSet};
 
 use cgmath::Point2;
-//use cgmath::PointN;
-//use eframe::egui::*;
 use smart_default::SmartDefault;
 use spade::delaunay::*;
-//use spade::delaunay::DelaunayWalkLocate;
-// use spade::delaunay::VertexEntry;
-//use spade::kernels::FloatKernel;
-//use spade::rtree::RTree;
-//use spade::delaunay::delaunay_locate::VertexEntry;
-// use nalgebra::Point2;
+use spade::delaunay::DelaunayWalkLocate;
+use spade::kernels::FloatKernel;
 
 #[derive(SmartDefault)]
 pub struct Poly {
     pub vertices: Vec<[f32; 2]>,
     pub edges: Vec<[usize; 2]>,
     pub triangles: Vec<[Point2<f32>; 3]>,
+    pub triangulation: ConstrainedDelaunayTriangulation<Point2<f32>, FloatKernel, DelaunayWalkLocate>,
     pub bad_edges: HashSet<usize>,
-    pub ordered_vertices: Vec<usize>,
-    pub ordered_vertices_coords: Vec<[f32; 2]>,
-    pub diagonals: Vec<Vec<usize>>,
     pub essential_diagonals: Vec<[usize; 2]>,
     pub convex_parts: Vec<Vec<usize>>
 }
@@ -31,25 +21,26 @@ impl Poly {
     pub fn counter_clockwise_order(&mut self) {}
 
     pub fn triang(&mut self) {
-        // let mut delaunay = FloatDelaunayTriangulation::with_tree_locate();
-        let mut cdt_delaunay = FloatCDT::with_tree_locate();
+        
+        self.triangulation = FloatCDT::with_walk_locate();
         //self.triangulation = FloatCDT::with_tree_locate();
+        
         
 
         for v in self.vertices.iter() {
-            cdt_delaunay.insert(Point2::new(v[0], v[1]));
+            self.triangulation.insert(Point2::new(v[0], v[1]));
         }
 
         for (idx, v) in self.vertices.iter().enumerate() {
             let w = self.vertices[(idx + 1) % self.vertices.len()];
-            cdt_delaunay.add_constraint_edge(Point2::new(v[0], v[1]), Point2::new(w[0], w[1]));
+            self.triangulation.add_constraint_edge(Point2::new(v[0], v[1]), Point2::new(w[0], w[1]));
         }
 
         let mut convex_hull: Vec<usize> = vec![];
-        let convex_hull_iter = cdt_delaunay.infinite_face().adjacent_edges();
+        let convex_hull_iter = self.triangulation.infinite_face().adjacent_edges();
         for edge in convex_hull_iter {
             let fixed_edge = edge.fix();
-            dbg!(&cdt_delaunay.edge(fixed_edge));
+            dbg!(&self.triangulation.edge(fixed_edge));
             convex_hull.push(fixed_edge);
         }
 
@@ -61,7 +52,7 @@ impl Poly {
 
         // Here we add the most exterior bad edges
         for edge_idx in convex_hull.iter() {
-            if !cdt_delaunay.is_constraint_edge(*edge_idx) {
+            if !self.triangulation.is_constraint_edge(*edge_idx) {
                 self.bad_edges.insert(*edge_idx);
             }
         }
@@ -76,9 +67,9 @@ impl Poly {
 
             for edge in to_be_visited.iter() {
                 //dbg!(edge);
-                for nb in cdt_delaunay.edge(*edge).o_next_iterator() {
+                for nb in self.triangulation.edge(*edge).o_next_iterator() {
                     //dbg!(nb.fix());
-                    if !cdt_delaunay.is_constraint_edge(nb.fix()) && !cdt_delaunay.is_constraint_edge(nb.sym().fix()) {
+                    if !self.triangulation.is_constraint_edge(nb.fix()) && !self.triangulation.is_constraint_edge(nb.sym().fix()) {
                         newer_bad_edges.insert(nb.fix());
                         newer_bad_edges.insert(nb.sym().fix());
                     }
@@ -90,7 +81,7 @@ impl Poly {
 
         
 
-        for face in cdt_delaunay.triangles() {
+        for face in self.triangulation.triangles() {
             let triangle = face.as_triangle();
             let mut should_add = true;
             println!(
@@ -126,7 +117,7 @@ impl Poly {
             }
         }
 
-        for vertex in cdt_delaunay.vertices() {
+        for vertex in self.triangulation.vertices() {
             dbg!(vertex);
             for e in vertex.ccw_out_edges() {
                 if !self.bad_edges.contains(&e.fix()) {
@@ -139,32 +130,13 @@ impl Poly {
 
     pub fn decomposition(&mut self) {
         
-        let mut cdt_delaunay = FloatCDT::with_tree_locate();
-
-        for v in self.vertices.iter() {
-            cdt_delaunay.insert(Point2::new(v[0], v[1]));
-        }
-
-        for (idx, v) in self.vertices.iter().enumerate() {
-            let w = self.vertices[(idx + 1) % self.vertices.len()];
-            cdt_delaunay.add_constraint_edge(Point2::new(v[0], v[1]), Point2::new(w[0], w[1]));
-        }
-
-        for vertex in cdt_delaunay.vertices() {
-            dbg!(vertex);
-            for e in vertex.ccw_out_edges() {
-                if !self.bad_edges.contains(&e.fix()) {
-                    dbg!(e);
-                }
-            }
-        }
 
         // label constraints by 2, 1 = essential, 0 = non-essential, not known =-1
         // TODO: make it
         let edge_labels: HashMap<FixedEdgeHandle, usize> = HashMap::new();
         
         // loop over vertices
-        for vertex in  cdt_delaunay.vertices() {
+        for vertex in  self.triangulation.vertices() {
 
             loop {
                 let mut check_again = false;
