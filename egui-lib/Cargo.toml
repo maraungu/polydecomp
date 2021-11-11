@@ -8,3 +8,4 @@ edition = "2018"
 [dependencies]
 eframe = "0.15.0" # Gives us egui, epi and web+native backends
 polygon = { path = "../polygon" }
+

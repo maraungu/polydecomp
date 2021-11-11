@@ -2,7 +2,7 @@ use eframe::egui::{Color32, Stroke};
 use eframe::{egui, epi};
 use egui::math::Pos2;
 
-use crate::draw::{self, PolyDraw};
+use crate::draw::PolyDraw;
 use polygon::poly::Poly;
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
@@ -73,6 +73,7 @@ impl epi::App for DecompApp {
         let mut save_your_poly = false;
         let mut clear_poly = false;
         let mut triangulate_poly = false;
+        let mut decompose_poly = false;
         let drawing_stuff = &mut self.drawing_app;
         let the_saved_poly = self.your_poly.clone();
 
@@ -145,12 +146,14 @@ impl epi::App for DecompApp {
                 });
 
                 ui.separator();
-
+                // Make sure this doesn't react if triangulation was not activated first
                 ui.horizontal(|ui| {
                     ui.heading("decomposition");
-                    if ui.button("show").clicked() {
-                        *decompose = true;
-                    }
+                    if ui.button("show").clicked() && *triangulate {
+                       *decompose = true;
+                        decompose_poly = true;
+                        drawing_stuff.polygon.decomposition();
+                    } 
                 });
 
                 ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
@@ -224,6 +227,7 @@ impl epi::App for DecompApp {
         if clear_poly {
             //*self = DecompApp::default();
             drawing_stuff.points.clear();
+            *triangulate = false;
             drawing_stuff.polygon = Poly::default();
         }
     }

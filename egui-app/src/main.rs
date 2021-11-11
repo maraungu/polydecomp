@@ -6,11 +6,6 @@
 // When compiling natively:
 fn main() {
     let app = egui_lib::app::DecompApp::default();
-    let options = eframe::NativeOptions::default(); //{
-                                                    // Let's show off that we support transparent windows
-                                                    //transparent: false,
-                                                    //drag_and_drop_support: true,
-                                                    //..Default::default()
-                                                    //};
+    let options = eframe::NativeOptions::default(); 
     eframe::run_native(Box::new(app), options);
 }
