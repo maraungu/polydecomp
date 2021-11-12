@@ -3,8 +3,6 @@ use eframe::egui::*;
 use polygon::poly::Poly;
 use std::vec;
 
-
-
 // we try here like in painting demo
 
 pub struct PolyDraw {
@@ -36,8 +34,6 @@ impl PolyDraw {
         let mut points_shapes: Vec<Shape> = vec![];
         let mut lines_shapes: Vec<Shape> = vec![];
         let mut triangles_shapes: Vec<Shape> = vec![];
-
-        
 
         // poly vertices drawn by clicking on canvas
         if let Some(mut pointer_pos) = response.interact_pointer_pos() {
@@ -96,16 +92,14 @@ impl PolyDraw {
             //dbg!(idx);
 
             let colour_triangles = |colour: Color32| {
-                triangles_shapes.push(
-                    Shape::convex_polygon(
-                        points_for_shape,
-                        colour,
-                        Stroke {
-                            width: 1.0,
-                            color: Color32::BLACK,
-                        },
-                    ), 
-                );
+                triangles_shapes.push(Shape::convex_polygon(
+                    points_for_shape,
+                    colour,
+                    Stroke {
+                        width: 1.0,
+                        color: Color32::BLACK,
+                    },
+                ));
             };
 
             match idx % 4 {

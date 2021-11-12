@@ -150,10 +150,10 @@ impl epi::App for DecompApp {
                 ui.horizontal(|ui| {
                     ui.heading("decomposition");
                     if ui.button("show").clicked() && *triangulate {
-                       *decompose = true;
+                        *decompose = true;
                         decompose_poly = true;
                         drawing_stuff.polygon.decomposition();
-                    } 
+                    }
                 });
 
                 ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
@@ -167,11 +167,9 @@ impl epi::App for DecompApp {
                         );
                         ui.small(" and ");
                         ui.add(
-                            egui::Hyperlink::new(
-                                "https://github.com/Stoeoef/spade",
-                            )
-                            .text("spade")
-                            .small(),
+                            egui::Hyperlink::new("https://github.com/Stoeoef/spade")
+                                .text("spade")
+                                .small(),
                         );
                     });
                 });
