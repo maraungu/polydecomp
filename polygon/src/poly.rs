@@ -8,12 +8,12 @@ use std::collections::{HashMap, HashSet};
 #[derive(SmartDefault)]
 pub struct Poly {
     pub vertices: Vec<[f32; 2]>,
-    pub edges: Vec<[usize; 2]>,
+    //pub edges: Vec<[usize; 2]>,
     pub triangles: Vec<[Point2<f32>; 3]>,
     pub triangulation:
         ConstrainedDelaunayTriangulation<Point2<f32>, FloatKernel, DelaunayWalkLocate>,
     pub bad_edges: HashSet<usize>,
-    pub essential_diagonals: Vec<[usize; 2]>,
+    pub essential_diagonals: Vec<Vec<[f32; 2]>>,
     pub convex_parts: Vec<Vec<Point2<f32>>>,
 }
 
@@ -181,10 +181,14 @@ impl Poly {
 
                         // note the order switch!
                         if !self.convex_angle(vertex_coords, next_vert, prev_vert) {
+                            // if essential label with 1
                             *edge_labels.get_mut(&fixed_edge).unwrap() = 1;
                             *edge_labels.get_mut(&mirror_edge).unwrap() = 1;
+                            // add to essentials
+                            self.essential_diagonals.push(vec![[vertex.x, -vertex.y], [opp_coords.x, -opp_coords.y]]);
                             continue;
                         } else {
+                            // else remove and check again
                             outgoing_edges.remove(idx);
                             check_again = true;
                             break;
@@ -255,6 +259,7 @@ impl Poly {
         for convex_part in convex_polys.iter() {
             let new_convex_part = self.vertex_ordering(convex_part);
             self.convex_parts.push(new_convex_part);
+            dbg!(convex_part);
         }
     }
 

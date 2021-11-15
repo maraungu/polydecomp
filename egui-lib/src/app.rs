@@ -13,7 +13,7 @@ pub struct DecompApp {
     poly_list: Vec<String>,
     drawing_app: PolyDraw,
     //save_your_poly: bool,
-    your_poly: Vec<Pos2>,
+    //your_poly: Vec<Pos2>,
     triangulate: bool,
     decompose: bool,
 }
@@ -27,11 +27,10 @@ impl Default for DecompApp {
                 "select a polygon".to_string(),
                 "polygon1".to_string(),
                 "polygon2".to_string(),
-                "your polygon".to_string(),
             ],
             drawing_app: PolyDraw::default(),
             //save_your_poly: false,
-            your_poly: Vec::new(),
+            //your_poly: Vec::new(),
             triangulate: false,
             decompose: false,
         }
@@ -70,12 +69,11 @@ impl epi::App for DecompApp {
             ..
         } = self;
 
-        let mut save_your_poly = false;
+        
         let mut clear_poly = false;
-        let mut triangulate_poly = false;
-        let mut decompose_poly = false;
         let drawing_stuff = &mut self.drawing_app;
-        let the_saved_poly = self.your_poly.clone();
+        //let the_saved_poly = self.your_poly.clone();
+        //let mut save_your_poly = false;
 
         egui::SidePanel::left("side_panel")
             .frame(
@@ -108,23 +106,26 @@ impl epi::App for DecompApp {
                         });
                     ui.end_row();
 
-                    ui.label("undo");
+                    ui.label("undo draw");
                     if ui.button("⟲").clicked() {
                         let length = drawing_stuff.points.len();
-                        dbg!(length);
+                        
                         if length >= 1 {
                             drawing_stuff.points.remove(length - 1);
                             drawing_stuff.polygon.vertices.remove(length - 1);
                             drawing_stuff.polygon.triangles = vec![];
-                            // dbg!(&drawing_stuff.points);
-                            // dbg!(&drawing_stuff.polygon.vertices);
+                            drawing_stuff.polygon.convex_parts = vec![];
+                            drawing_stuff.polygon.essential_diagonals = vec![];
+                            drawing_stuff.show_decomp = false;
+                            drawing_stuff.show_essentials = false;
                         }
                     }
-                    ui.end_row();
-                    ui.label("save");
-                    if ui.button("💾").clicked() {
-                        save_your_poly = true;
-                    }
+                    // TODO: deal with saving polygons
+                    // ui.end_row();
+                    // ui.label("save");
+                    // if ui.button("💾").clicked() {
+                    //     save_your_poly = true;
+                    // }
                     ui.end_row();
                     ui.label("clear");
                     if ui.button("🔃").clicked() {
@@ -138,21 +139,37 @@ impl epi::App for DecompApp {
                     ui.heading("triangulation");
                     if ui.button("show").clicked() {
                         *triangulate = true;
-                        triangulate_poly = true;
                         drawing_stuff.polygon.triang();
-                        // smth like
-                        // drawing_stuff.triangles = drawing_stuff.polygon.triang();
                     }
                 });
 
                 ui.separator();
                 // Make sure this doesn't react if triangulation was not activated first
-                ui.horizontal(|ui| {
+                egui::Grid::new("decomp").min_col_width(0.0).show(ui, |ui| {
                     ui.heading("decomposition");
+                    ui.end_row();
+                    ui.label("essential diagonals");
                     if ui.button("show").clicked() && *triangulate {
-                        *decompose = true;
-                        decompose_poly = true;
-                        drawing_stuff.polygon.decomposition();
+                        
+                        drawing_stuff.show_essentials = true;
+                        if !*decompose {
+                            drawing_stuff.polygon.decomposition();
+                            *decompose = true;
+                        }
+                        
+                        
+                    }
+                    ui.end_row();
+                    ui.label("convex parts");
+                    if ui.button("show").clicked() && *triangulate {
+                        
+                        //decompose_poly = true;
+                        drawing_stuff.show_decomp = true;
+                        if !*decompose {
+                            drawing_stuff.polygon.decomposition();
+                            *decompose = true;
+                        }
+                        
                     }
                 });
 
@@ -190,7 +207,6 @@ impl epi::App for DecompApp {
                         for point in drawing_stuff.points.iter() {
                             drawing_stuff.polygon.vertices.push([point.x, -point.y]);
                         }
-                        //drawing_stuff.polygon.vertices = 
                         drawing_stuff.ui_content(ui);
                     }
                     else {
@@ -211,22 +227,24 @@ impl epi::App for DecompApp {
                                     Pos2::from([460.0, 255.0]),
                                     Pos2::from([515.0, 167.0])]);
                     },
-                    "your polygon" => {
-                        draw_chosen_polygon(the_saved_poly);
-                    },
+                    // "your polygon" => {
+                    //     draw_chosen_polygon(the_saved_poly);
+                    // },
                     _ => {
                         drawing_stuff.ui_content(ui);
                     },
                 }
             });
-        if save_your_poly {
-            self.your_poly = drawing_stuff.points.clone();
-        }
+        // if save_your_poly {
+        //     self.your_poly = drawing_stuff.points.clone();
+        //}
         if clear_poly {
-            //*self = DecompApp::default();
             drawing_stuff.points.clear();
             *triangulate = false;
+            *decompose = false;
             drawing_stuff.polygon = Poly::default();
+            drawing_stuff.show_decomp = false;
+            drawing_stuff.show_essentials = false;
         }
     }
 }

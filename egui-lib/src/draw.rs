@@ -8,6 +8,8 @@ use std::vec;
 pub struct PolyDraw {
     pub points: Vec<Pos2>,
     pub polygon: Poly,
+    pub show_essentials: bool,
+    pub show_decomp: bool,
 }
 
 impl Default for PolyDraw {
@@ -15,6 +17,8 @@ impl Default for PolyDraw {
         Self {
             points: Vec::new(),
             polygon: Poly::default(),
+            show_essentials: false,
+            show_decomp: false,
         }
     }
 }
@@ -29,6 +33,7 @@ impl PolyDraw {
         let mut lines_shapes: Vec<Shape> = vec![];
         let mut triangles_shapes: Vec<Shape> = vec![];
         let mut convex_shapes: Vec<Shape> = vec![];
+        let mut essential_lines: Vec<Shape> = vec![];
         // --------------------------------------------------------
 
         // poly vertices drawn by clicking on canvas
@@ -47,16 +52,7 @@ impl PolyDraw {
             }
         }
 
-        // poly edges drawn by connecting the points in order
-        for (idx, point) in self.points.iter().enumerate() {
-            lines_shapes.push(Shape::LineSegment {
-                points: [*point, self.points[(idx + 1) % self.points.len()]],
-                stroke: Stroke {
-                    width: 1.0,
-                    color: Color32::DARK_GRAY,
-                },
-            })
-        }
+        
 
         for point in self.points.iter() {
             points_shapes.push(Shape::Circle(CircleShape {
@@ -67,9 +63,32 @@ impl PolyDraw {
             }));
         }
 
+        // poly edges drawn by connecting the points in order
+        for (idx, point) in self.points.iter().enumerate() {
+            lines_shapes.push(Shape::LineSegment {
+                points: [*point, self.points[(idx + 1) % self.points.len()]],
+                stroke: Stroke {
+                    width: 2.0,
+                    color: Color32::GRAY,
+                },
+            })
+        }
+
+        // essential diagonals
+        for essential in self.polygon.essential_diagonals.iter() {
+            essential_lines.push(Shape::LineSegment {
+                points: [Pos2::from(essential[0]), Pos2::from(essential[1])],
+                stroke: Stroke {
+                    width: 2.0,
+                    color: Color32::RED,
+                },
+            })
+        }
+
         // triangles obtained from Delaunay triangulation
         for (idx, triangle) in self.polygon.triangles.iter().enumerate() {
             let points_for_shape: Vec<Pos2> = vec![
+                // need - y coordinates because I used a right-handed coord sys in poly.rs
                 Pos2::from([triangle[0].x, -triangle[0].y]),
                 Pos2::from([triangle[1].x, -triangle[1].y]),
                 Pos2::from([triangle[2].x, -triangle[2].y]),
@@ -81,7 +100,7 @@ impl PolyDraw {
                     colour,
                     Stroke {
                         width: 2.0,
-                        color: Color32::DARK_GRAY,
+                        color: Color32::GRAY,
                     },
                 ));
             };
@@ -105,10 +124,7 @@ impl PolyDraw {
                 convex_shapes.push(Shape::convex_polygon(
                     points_for_shape,
                     colour,
-                    Stroke {
-                        width: 2.0,
-                        color: Color32::DARK_GRAY,
-                    },
+                    Stroke::none(),
                 ));
             };
 
@@ -120,10 +136,18 @@ impl PolyDraw {
             }
         }
 
+        
         // adding to the painter
-        painter.extend(lines_shapes);
+        
         painter.extend(triangles_shapes);
+        if self.show_decomp {
         painter.extend(convex_shapes);
+        }
+        if self.show_essentials {
+            painter.extend(essential_lines);
+        }
+        
+        painter.extend(lines_shapes);
         painter.extend(points_shapes);
 
         response
