@@ -12,8 +12,6 @@ pub struct DecompApp {
     selected_poly: String,
     poly_list: Vec<String>,
     drawing_app: PolyDraw,
-    //save_your_poly: bool,
-    //your_poly: Vec<Pos2>,
     triangulate: bool,
     decompose: bool,
 }
@@ -29,8 +27,6 @@ impl Default for DecompApp {
                 "polygon2".to_string(),
             ],
             drawing_app: PolyDraw::default(),
-            //save_your_poly: false,
-            //your_poly: Vec::new(),
             triangulate: false,
             decompose: false,
         }
@@ -63,7 +59,6 @@ impl epi::App for DecompApp {
             loaded_poly,
             selected_poly,
             poly_list,
-            //save_your_poly,
             triangulate,
             decompose,
             ..
@@ -72,9 +67,7 @@ impl epi::App for DecompApp {
         
         let mut clear_poly = false;
         let drawing_stuff = &mut self.drawing_app;
-        //let the_saved_poly = self.your_poly.clone();
-        //let mut save_your_poly = false;
-
+        
         egui::SidePanel::left("side_panel")
             .frame(
                 egui::Frame::default()
@@ -120,12 +113,7 @@ impl epi::App for DecompApp {
                             drawing_stuff.show_essentials = false;
                         }
                     }
-                    // TODO: deal with saving polygons
-                    // ui.end_row();
-                    // ui.label("save");
-                    // if ui.button("💾").clicked() {
-                    //     save_your_poly = true;
-                    // }
+                    
                     ui.end_row();
                     ui.label("clear");
                     if ui.button("🔃").clicked() {
@@ -163,7 +151,6 @@ impl epi::App for DecompApp {
                     ui.label("convex parts");
                     if ui.button("show").clicked() && *triangulate {
                         
-                        //decompose_poly = true;
                         drawing_stuff.show_decomp = true;
                         if !*decompose {
                             drawing_stuff.polygon.decomposition();
@@ -227,17 +214,13 @@ impl epi::App for DecompApp {
                                     Pos2::from([460.0, 255.0]),
                                     Pos2::from([515.0, 167.0])]);
                     },
-                    // "your polygon" => {
-                    //     draw_chosen_polygon(the_saved_poly);
-                    // },
+                
                     _ => {
                         drawing_stuff.ui_content(ui);
                     },
                 }
             });
-        // if save_your_poly {
-        //     self.your_poly = drawing_stuff.points.clone();
-        //}
+       
         if clear_poly {
             drawing_stuff.points.clear();
             *triangulate = false;
