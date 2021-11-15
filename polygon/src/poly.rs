@@ -8,7 +8,6 @@ use std::collections::{HashMap, HashSet};
 #[derive(SmartDefault)]
 pub struct Poly {
     pub vertices: Vec<[f32; 2]>,
-    //pub edges: Vec<[usize; 2]>,
     pub triangles: Vec<[Point2<f32>; 3]>,
     pub triangulation:
         ConstrainedDelaunayTriangulation<Point2<f32>, FloatKernel, DelaunayWalkLocate>,

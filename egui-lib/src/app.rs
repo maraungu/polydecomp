@@ -204,17 +204,39 @@ impl epi::App for DecompApp {
                 
                 match selected_poly.as_str() {
                     "polygon1" => {
-                        draw_chosen_polygon(vec![Pos2::from([600.0, 350.0]), Pos2::from([500.0, 450.0])]);
+                        draw_chosen_polygon(vec![Pos2::from([400.0, 150.0]), 
+                        Pos2::from([380.0, 300.0]),
+                        Pos2::from([360.0, 330.0]),
+                        Pos2::from([360.0, 350.0]),
+                        Pos2::from([400.0, 400.0]),
+                        Pos2::from([450.0, 380.0]),
+                        Pos2::from([500.0, 370.0]),
+                        Pos2::from([550.0, 380.0]),
+                        Pos2::from([600.0, 400.0]),
+                        Pos2::from([640.0, 350.0]),
+                        Pos2::from([640.0, 330.0]),
+                        Pos2::from([620.0, 300.0]),
+                        Pos2::from([600.0, 150.0]),
+                        Pos2::from([520.0, 210.0]),
+                        Pos2::from([500.0, 200.0]),
+                        Pos2::from([480.0, 210.0]),
+                        ],
+                    );
                     },
                     "polygon2" => {
-                        draw_chosen_polygon(vec![Pos2::from([330.0, 170.0]),
-                                    Pos2::from([340.0, 390.0]),
-                                    Pos2::from([555.0, 390.0]),
-                                    Pos2::from([465.0, 330.0]),
-                                    Pos2::from([460.0, 255.0]),
-                                    Pos2::from([515.0, 167.0])]);
+                        draw_chosen_polygon(vec![Pos2::from([500.0, 100.0]),
+                        Pos2::from([450.0, 250.0]),
+                        Pos2::from([400.0, 350.0]),
+                        Pos2::from([450.0, 450.0]),
+                        Pos2::from([450.0, 550.0]),
+                        Pos2::from([500.0, 500.0]),
+                        Pos2::from([650.0, 550.0]),
+                        Pos2::from([550.0, 450.0]),
+                        Pos2::from([600.0, 350.0]),
+                        Pos2::from([550.0, 250.0]),
+                        ]);
                     },
-                
+                    
                     _ => {
                         drawing_stuff.ui_content(ui);
                     },
