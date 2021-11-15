@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use cgmath::Point2;
+use nalgebra::Point;
 use smart_default::SmartDefault;
 use spade::delaunay::DelaunayWalkLocate;
 use spade::delaunay::*;
@@ -15,7 +16,7 @@ pub struct Poly {
         ConstrainedDelaunayTriangulation<Point2<f32>, FloatKernel, DelaunayWalkLocate>,
     pub bad_edges: HashSet<usize>,
     pub essential_diagonals: Vec<[usize; 2]>,
-    pub convex_parts: Vec<Vec<usize>>,
+    pub convex_parts: Vec<Vec<Point2<f32>>>,
 }
 
 impl Poly {
@@ -295,7 +296,33 @@ impl Poly {
         dbg!("check convex parts");
         for convex_part in convex_polys.iter() {
             dbg!(convex_part);
+            let new_convex_part = self.vertex_ordering(convex_part);
+            dbg!(&new_convex_part);
+            self.convex_parts.push(new_convex_part);
         }
+
+
+    }
+
+    fn vertex_ordering(&self, convex_poly: &Vec<EdgeHandle<Point2<f32>, CdtEdge>>) 
+    -> Vec<Point2<f32>> {
+        let mut ordered_poly: Vec<[usize; 2]> = Vec::new();
+        let mut final_poly: Vec<Point2<f32>> = Vec::new();
+        // first order by vertex index
+        for edge in convex_poly.iter() {
+            ordered_poly.push([edge.from().fix(), edge.to().fix()]);
+        }
+        ordered_poly.sort_by_key(|tuple| tuple[0]);
+
+        // then convert to coordinates
+        for vertex in ordered_poly.iter() {
+            final_poly.push(*self.triangulation.vertex(vertex[0]));
+            final_poly.push(*self.triangulation.vertex(vertex[1]));
+        }
+
+        // dbg!(&ordered_poly);
+        final_poly
+        //ordered_poly
     }
 
     fn convex_angle(

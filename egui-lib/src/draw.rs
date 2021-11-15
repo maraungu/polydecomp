@@ -34,6 +34,7 @@ impl PolyDraw {
         let mut points_shapes: Vec<Shape> = vec![];
         let mut lines_shapes: Vec<Shape> = vec![];
         let mut triangles_shapes: Vec<Shape> = vec![];
+        let mut convex_shapes: Vec<Shape> = vec![];
 
         // poly vertices drawn by clicking on canvas
         if let Some(mut pointer_pos) = response.interact_pointer_pos() {
