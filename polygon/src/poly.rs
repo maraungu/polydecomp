@@ -22,17 +22,13 @@ impl Poly {
     /// The resulting triangles are stored in the triangles field of Poly
     pub fn triang(&mut self) {
         // ------ Triangulation -----------
-        self.triangulation = FloatCDT::with_walk_locate();
 
-        for v in self.vertices.iter() {
-            self.triangulation.insert(Point2::new(v[0], v[1]));
-        }
+        self.initialise_triangulation(); // this also yields the convex hull
 
-        // add polygon edges as constraints in the CDT
-        for (idx, v) in self.vertices.iter().enumerate() {
-            let w = self.vertices[(idx + 1) % self.vertices.len()];
-            self.triangulation
-                .add_constraint_edge(Point2::new(v[0], v[1]), Point2::new(w[0], w[1]));
+        // if poly vertices not in ccw order, reverse 
+        if !self.poly_vertices_ccw() {
+            self.vertices.reverse();
+            self.initialise_triangulation();
         }
 
         // Need to collect and remove the "bad edges" of the triangulation
@@ -107,16 +103,13 @@ impl Poly {
         // labels: 2 = poly edges, 1 = essential, 0 = non-essential
         let mut edge_labels: HashMap<FixedEdgeHandle, i32> = HashMap::new();
 
-        for edge in self.bad_edges.iter() {
-            let edge_bigger = self.triangulation.edge(*edge);
-            dbg!(edge_bigger);
-        }
-
+        // ignore the bad edges from the triangulation
         let triangulation_edges = self
             .triangulation
             .edges()
             .filter(|e| !self.bad_edges.contains(&e.fix()));
 
+        // label the remaining edges
         for edge in triangulation_edges {
             let fixed_edge = edge.fix();
             let mirror_edge = edge.sym().fix();
@@ -142,6 +135,7 @@ impl Poly {
                 .vertex(self.previous_vertex(vertex_fixed));
             let vertex_coords = *vertex;
 
+            // store all outgoing (non bad) edges from this vertex
             let mut outgoing_edges: Vec<EdgeHandle<Point2<f32>, CdtEdge>> = vertex
                 .ccw_out_edges()
                 .filter(|e| edge_labels.get(&e.fix()).is_some())
@@ -193,7 +187,7 @@ impl Poly {
                                 .push(vec![[vertex.x, -vertex.y], [opp_coords.x, -opp_coords.y]]);
                             continue;
                         } else {
-                            // else remove and check again
+                            // else remove from outgoing edges and check again
                             outgoing_edges.remove(idx);
                             check_again = true;
                             break;
@@ -208,7 +202,7 @@ impl Poly {
         }
 
         // --- Remove not really essential essentials ------
-        // Comment this out to see effect on polygon1
+        // Comment this for loop out to see effect on polygon1
         // It is another traversal of the poly edges to
         // establish which essential diagonals are truly essential
         // --------------------------------------------------
@@ -221,6 +215,7 @@ impl Poly {
             let vertex_coords = *vertex;
 
             // only look at the essential and poly edges
+            // so ignore the bad edges and those with label 0
             let mut outgoing_edges: Vec<EdgeHandle<Point2<f32>, CdtEdge>> = vertex
                 .ccw_out_edges()
                 .filter(|e| {
@@ -246,13 +241,13 @@ impl Poly {
 
                     let label = edge_labels.get(&fixed_edge).unwrap(); // ok to unwrap becaus of the filter used for outgoing_edges
 
-                    // if edge has been marked as essential
+                    // if edge has been marked as essential (so not poly edge)
                     if label == &1 {
                        
                         // if the vertex is concave and its opposite wrt this diagonal is convex, then we check
                         if !self.convex_angle(vertex_coords, prev_poly_vertex, next_poly_vertex)
                             && self.convex_angle(opp_coords, opp_prev, opp_next)
-                        {
+                        {   
                             // check if essential diagonal
                             let prev_vert = *outgoing_edges
                                 [(idx + outgoing_edges.len() - 1) % outgoing_edges.len()]
@@ -261,6 +256,7 @@ impl Poly {
 
                             // note the order switch!
                             if self.convex_angle(vertex_coords, next_vert, prev_vert) {
+                                
                                 // if not really essential label with 0
                                 *edge_labels.get_mut(&fixed_edge).unwrap() = 0;
                                 *edge_labels.get_mut(&mirror_edge).unwrap() = 0;
@@ -285,6 +281,8 @@ impl Poly {
                 }
             }
         }
+
+        
 
         // -------- Gluing together the triangles along the non-essential edges ----------
         // First add all triangles to the convex_polys vector
@@ -343,11 +341,54 @@ impl Poly {
         for convex_part in convex_polys.iter() {
             let new_convex_part = self.vertex_ordering(convex_part);
             self.convex_parts.push(new_convex_part);
-            dbg!(convex_part);
         }
     }
 
-    //fn redundancy_check(&self,)
+    /// Constrained Delaunay triangulation from the spade crate.
+    /// Constraints are the polygon edges.
+    fn initialise_triangulation(&mut self) {
+        
+        self.triangulation = FloatCDT::with_walk_locate();
+
+       for v in self.vertices.iter() {
+            self.triangulation.insert(Point2::new(v[0], v[1]));
+        }
+
+        // add polygon edges as constraints in the CDT
+        for (idx, v) in self.vertices.iter().enumerate() {
+            let w = self.vertices[(idx + 1) % self.vertices.len()];
+            self.triangulation
+                .add_constraint_edge(Point2::new(v[0], v[1]), Point2::new(w[0], w[1]));
+        }
+    }
+    
+    /// Checks that the polygon vertices are in ccw order
+    /// by looking at the convex hull
+    fn poly_vertices_ccw(&self) -> bool {
+        
+        let mut convex_hull_iter = self.triangulation.infinite_face().adjacent_edges();
+       
+        let first_edge = convex_hull_iter.nth(0);
+        
+        
+        let mut first_vertex =  first_edge.unwrap().from().fix();
+        let mut second_vertex = first_edge.unwrap().to().fix();
+        
+
+        if first_vertex == 0 {
+            first_vertex = self.vertices.len();
+        }
+        if second_vertex == 0 {
+            second_vertex = self.vertices.len();
+        }
+
+        if first_vertex < second_vertex {
+            false
+        }
+        else {
+            true
+        }
+    }
 
     /// Ordering function that ensures that the vertices of the
     /// convex parts are ordered as follows:
@@ -410,5 +451,38 @@ impl Poly {
 mod tests {
     use super::*;
 
-    fn test_triangle() {}
+    #[test]
+    fn test_ccw_detection() {
+        let mut polygon = Poly::default();
+        polygon.vertices = vec![[30.0, 30.0], [40.0, 10.0], [10.0, 10.0]];
+        polygon.initialise_triangulation();
+        let orientation = polygon.poly_vertices_ccw();
+        assert_eq!(orientation, false);
+    }
+
+    #[test]
+    fn test_triangle() {
+        let mut polygon = Poly::default();
+        polygon.vertices = vec![[30.0, 30.0], [10.0, 10.0], [40.0, 10.0]];
+        polygon.triang();
+        polygon.decomposition();
+        let triangle_number = polygon.triangles.len();
+        let convex_part_number = polygon.convex_parts.len();
+        assert_eq!(triangle_number, 1);
+        assert_eq!(convex_part_number, 1);
+    }
+
+    #[test]
+    fn test_beak_poly() {
+        let mut polygon = Poly::default();
+        polygon.vertices = vec![[10.0, 10.0], [10.0, 5.0], [20.0, 0.0], [0.0, 0.0]];
+        polygon.triang();
+        polygon.decomposition();
+        let triangle_number = polygon.triangles.len();
+        let convex_part_number = polygon.convex_parts.len();
+        let essential_number = polygon.essential_diagonals.len();
+        assert_eq!(triangle_number, 2);
+        assert_eq!(convex_part_number, 2);
+        assert_eq!(essential_number, 1);
+    }
 }

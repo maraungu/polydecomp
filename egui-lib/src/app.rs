@@ -125,8 +125,13 @@ impl epi::App for DecompApp {
                 ui.horizontal(|ui| {
                     ui.heading("triangulation");
                     if ui.button("show").clicked() {
-                        *triangulate = true;
-                        drawing_stuff.polygon.triang();
+                        if drawing_stuff.points.len() > 2 {
+                            *triangulate = true;
+                            drawing_stuff.polygon.triang();
+                        }
+                        else {
+                            println!("Need at least three points");
+                        }
                     }
                 });
 
@@ -213,9 +218,8 @@ impl epi::App for DecompApp {
                         Pos2::from([600.0, 150.0]),
                         Pos2::from([520.0, 210.0]),
                         Pos2::from([500.0, 200.0]),
-                        Pos2::from([480.0, 210.0]),
-                        ],
-                    );
+                        Pos2::from([480.0, 210.0]),],
+                        );
                     },
                     "polygon2" => {
                         draw_chosen_polygon(vec![Pos2::from([500.0, 100.0]),
@@ -245,5 +249,77 @@ impl epi::App for DecompApp {
             drawing_stuff.show_decomp = false;
             drawing_stuff.show_essentials = false;
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_polygon1() {
+        let mut app = DecompApp {
+            selected_poly: "polygon1".to_string(),
+            ..Default::default()
+        };
+        
+        app.drawing_app.points = vec![Pos2::from([400.0, 150.0]), 
+        Pos2::from([380.0, 300.0]),
+        Pos2::from([360.0, 330.0]),
+        Pos2::from([360.0, 350.0]),
+        Pos2::from([400.0, 400.0]),
+        Pos2::from([450.0, 380.0]),
+        Pos2::from([500.0, 370.0]),
+        Pos2::from([550.0, 380.0]),
+        Pos2::from([600.0, 400.0]),
+        Pos2::from([640.0, 350.0]),
+        Pos2::from([640.0, 330.0]),
+        Pos2::from([620.0, 300.0]),
+        Pos2::from([600.0, 150.0]),
+        Pos2::from([520.0, 210.0]),
+        Pos2::from([500.0, 200.0]),
+        Pos2::from([480.0, 210.0]),];
+
+        for point in app.drawing_app.points.iter() {
+            app.drawing_app.polygon.vertices.push([point.x, -point.y]);
+        }
+
+        app.drawing_app.polygon.triang();
+        app.drawing_app.polygon.decomposition();
+        
+        let convex_part_number = app.drawing_app.polygon.convex_parts.len();
+        assert_eq!(convex_part_number, 6);
+        
+    }
+
+    #[test]
+    fn test_polygon2() {
+        let mut app = DecompApp {
+            selected_poly: "polygon2".to_string(),
+            ..Default::default()
+        };
+        
+        app.drawing_app.points = vec![Pos2::from([500.0, 100.0]),
+        Pos2::from([450.0, 250.0]),
+        Pos2::from([400.0, 350.0]),
+        Pos2::from([450.0, 450.0]),
+        Pos2::from([450.0, 550.0]),
+        Pos2::from([500.0, 500.0]),
+        Pos2::from([650.0, 550.0]),
+        Pos2::from([550.0, 450.0]),
+        Pos2::from([600.0, 350.0]),
+        Pos2::from([550.0, 250.0]),
+        ];
+
+        for point in app.drawing_app.points.iter() {
+            app.drawing_app.polygon.vertices.push([point.x, -point.y]);
+        }
+
+        app.drawing_app.polygon.triang();
+        app.drawing_app.polygon.decomposition();
+        
+        let convex_part_number = app.drawing_app.polygon.convex_parts.len();
+        assert_eq!(convex_part_number, 4);
+        
     }
 }
