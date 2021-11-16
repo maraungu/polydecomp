@@ -52,8 +52,6 @@ impl PolyDraw {
             }
         }
 
-        
-
         for point in self.points.iter() {
             points_shapes.push(Shape::Circle(CircleShape {
                 center: *point,
@@ -105,11 +103,13 @@ impl PolyDraw {
                 ));
             };
 
-            match idx % 4 {
-                0 => colour_triangles(Color32::from_rgba_premultiplied(78, 91, 207, 255)),
-                1 => colour_triangles(Color32::from_rgba_premultiplied(212, 158, 11, 255)),
-                2 => colour_triangles(Color32::from_rgba_premultiplied(115, 23, 43, 255)),
-                _ => colour_triangles(Color32::from_rgba_premultiplied(52, 133, 75, 255)),
+            match idx % 6 {
+                0 => colour_triangles(Color32::from_rgb(78, 91, 207)),
+                1 => colour_triangles(Color32::from_rgb(212, 158, 11)),
+                2 => colour_triangles(Color32::from_rgb(115, 23, 43)),
+                3 => colour_triangles(Color32::from_rgb(52, 133, 75)),
+                4 => colour_triangles(Color32::from_rgb(237, 137, 7)),
+                _ => colour_triangles(Color32::from_rgb(17, 143, 130)),
             }
         }
 
@@ -128,25 +128,26 @@ impl PolyDraw {
                 ));
             };
 
-            match idx % 4 {
+            match idx % 6 {
                 0 => colour_parts(Color32::from_rgb(99, 164, 186)),
                 1 => colour_parts(Color32::from_rgb(191, 128, 189)),
                 2 => colour_parts(Color32::from_rgb(143, 191, 128)),
-                _ => colour_parts(Color32::from_rgb(235, 233, 117)),
+                3 => colour_parts(Color32::from_rgb(235, 233, 117)),
+                4 => colour_parts(Color32::from_rgb(227, 176, 132)),
+                _ => colour_parts(Color32::from_rgb(137, 124, 222)),
             }
         }
 
-        
         // adding to the painter
-        
+
         painter.extend(triangles_shapes);
         if self.show_decomp {
-        painter.extend(convex_shapes);
+            painter.extend(convex_shapes);
         }
         if self.show_essentials {
             painter.extend(essential_lines);
         }
-        
+
         painter.extend(lines_shapes);
         painter.extend(points_shapes);
 

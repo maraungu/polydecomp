@@ -107,6 +107,11 @@ impl Poly {
         // labels: 2 = poly edges, 1 = essential, 0 = non-essential
         let mut edge_labels: HashMap<FixedEdgeHandle, i32> = HashMap::new();
 
+        for edge in self.bad_edges.iter() {
+            let edge_bigger = self.triangulation.edge(*edge);
+            dbg!(edge_bigger);
+        }
+
         let triangulation_edges = self
             .triangulation
             .edges()
@@ -184,13 +189,93 @@ impl Poly {
                             *edge_labels.get_mut(&fixed_edge).unwrap() = 1;
                             *edge_labels.get_mut(&mirror_edge).unwrap() = 1;
                             // add to essentials
-                            self.essential_diagonals.push(vec![[vertex.x, -vertex.y], [opp_coords.x, -opp_coords.y]]);
+                            self.essential_diagonals
+                                .push(vec![[vertex.x, -vertex.y], [opp_coords.x, -opp_coords.y]]);
                             continue;
                         } else {
                             // else remove and check again
                             outgoing_edges.remove(idx);
                             check_again = true;
                             break;
+                        }
+                    }
+                }
+
+                if !check_again {
+                    break;
+                }
+            }
+        }
+
+        // --- Remove not really essential essentials ------
+        // Comment this out to see effect on polygon1
+        // It is another traversal of the poly edges to
+        // establish which essential diagonals are truly essential
+        // --------------------------------------------------
+        for vertex in self.triangulation.vertices() {
+            let vertex_fixed = vertex.fix();
+            let next_poly_vertex = *self.triangulation.vertex(self.next_vertex(vertex_fixed));
+            let prev_poly_vertex = *self
+                .triangulation
+                .vertex(self.previous_vertex(vertex_fixed));
+            let vertex_coords = *vertex;
+
+            // only look at the essential and poly edges
+            let mut outgoing_edges: Vec<EdgeHandle<Point2<f32>, CdtEdge>> = vertex
+                .ccw_out_edges()
+                .filter(|e| {
+                    let label = edge_labels.get(&e.fix());
+                    label.is_some() && label != Some(&0)
+                })
+                .collect();
+
+            loop {
+                let mut check_again = false;
+
+                // loop through the outgoing edges of the vertex
+                for idx in 0..outgoing_edges.len() {
+                    let edge = outgoing_edges[idx];
+                    let fixed_edge = edge.fix();
+                    let mirror_edge = edge.sym().fix();
+                    let opposite_vertex = edge.to().fix();
+                    let opp_prev = *self
+                        .triangulation
+                        .vertex(self.previous_vertex(opposite_vertex));
+                    let opp_next = *self.triangulation.vertex(self.next_vertex(opposite_vertex));
+                    let opp_coords = *edge.to();
+
+                    let label = edge_labels.get(&fixed_edge).unwrap(); // ok to unwrap becaus of the filter used for outgoing_edges
+
+                    // if edge has been marked as essential
+                    if label == &1 {
+                       
+                        // if the vertex is concave and its opposite wrt this diagonal is convex, then we check
+                        if !self.convex_angle(vertex_coords, prev_poly_vertex, next_poly_vertex)
+                            && self.convex_angle(opp_coords, opp_prev, opp_next)
+                        {
+                            // check if essential diagonal
+                            let prev_vert = *outgoing_edges
+                                [(idx + outgoing_edges.len() - 1) % outgoing_edges.len()]
+                            .to();
+                            let next_vert = *outgoing_edges[(idx + 1) % outgoing_edges.len()].to();
+
+                            // note the order switch!
+                            if self.convex_angle(vertex_coords, next_vert, prev_vert) {
+                                // if not really essential label with 0
+                                *edge_labels.get_mut(&fixed_edge).unwrap() = 0;
+                                *edge_labels.get_mut(&mirror_edge).unwrap() = 0;
+                                // remove from essentials
+                                self.essential_diagonals.retain(|vector| {
+                                    *vector
+                                        != vec![
+                                            [vertex.x, -vertex.y],
+                                            [opp_coords.x, -opp_coords.y],
+                                        ]
+                                });
+                                outgoing_edges.remove(idx);
+                                check_again = true;
+                                break;
+                            }
                         }
                     }
                 }
@@ -262,6 +347,8 @@ impl Poly {
         }
     }
 
+    //fn redundancy_check(&self,)
+
     /// Ordering function that ensures that the vertices of the
     /// convex parts are ordered as follows:
     /// [point1, point2], [point2, point3], ...
@@ -317,4 +404,11 @@ impl Poly {
     fn next_vertex(&self, vertex: usize) -> usize {
         (vertex + 1) % self.vertices.len()
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn test_triangle() {}
 }

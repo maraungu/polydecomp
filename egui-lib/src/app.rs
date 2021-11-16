@@ -64,10 +64,9 @@ impl epi::App for DecompApp {
             ..
         } = self;
 
-        
         let mut clear_poly = false;
         let drawing_stuff = &mut self.drawing_app;
-        
+
         egui::SidePanel::left("side_panel")
             .frame(
                 egui::Frame::default()
@@ -102,7 +101,7 @@ impl epi::App for DecompApp {
                     ui.label("undo draw");
                     if ui.button("⟲").clicked() {
                         let length = drawing_stuff.points.len();
-                        
+
                         if length >= 1 {
                             drawing_stuff.points.remove(length - 1);
                             drawing_stuff.polygon.vertices.remove(length - 1);
@@ -113,7 +112,7 @@ impl epi::App for DecompApp {
                             drawing_stuff.show_essentials = false;
                         }
                     }
-                    
+
                     ui.end_row();
                     ui.label("clear");
                     if ui.button("🔃").clicked() {
@@ -138,25 +137,20 @@ impl epi::App for DecompApp {
                     ui.end_row();
                     ui.label("essential diagonals");
                     if ui.button("show").clicked() && *triangulate {
-                        
                         drawing_stuff.show_essentials = true;
                         if !*decompose {
                             drawing_stuff.polygon.decomposition();
                             *decompose = true;
                         }
-                        
-                        
                     }
                     ui.end_row();
                     ui.label("convex parts");
                     if ui.button("show").clicked() && *triangulate {
-                        
                         drawing_stuff.show_decomp = true;
                         if !*decompose {
                             drawing_stuff.polygon.decomposition();
                             *decompose = true;
                         }
-                        
                     }
                 });
 
@@ -242,7 +236,7 @@ impl epi::App for DecompApp {
                     },
                 }
             });
-       
+
         if clear_poly {
             drawing_stuff.points.clear();
             *triangulate = false;
