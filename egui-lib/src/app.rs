@@ -104,12 +104,19 @@ impl epi::App for DecompApp {
 
                         if length >= 1 {
                             drawing_stuff.points.remove(length - 1);
-                            drawing_stuff.polygon.vertices.remove(length - 1);
+                            if drawing_stuff.polygon.changed_orientation {
+                                drawing_stuff.polygon.vertices.remove(0);
+                            }
+                            else {
+                                drawing_stuff.polygon.vertices.remove(length - 1);
+                            }
                             drawing_stuff.polygon.triangles = vec![];
                             drawing_stuff.polygon.convex_parts = vec![];
                             drawing_stuff.polygon.essential_diagonals = vec![];
                             drawing_stuff.show_decomp = false;
                             drawing_stuff.show_essentials = false;
+                            *decompose = false;
+                            *triangulate = false;
                         }
                     }
 

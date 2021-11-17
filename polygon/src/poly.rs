@@ -8,6 +8,7 @@ use std::collections::{HashMap, HashSet};
 #[derive(SmartDefault)]
 pub struct Poly {
     pub vertices: Vec<[f32; 2]>,
+    pub changed_orientation: bool,
     pub triangles: Vec<[Point2<f32>; 3]>,
     pub triangulation:
         ConstrainedDelaunayTriangulation<Point2<f32>, FloatKernel, DelaunayWalkLocate>,
@@ -26,7 +27,8 @@ impl Poly {
         self.initialise_triangulation(); // this also yields the convex hull
 
         // if poly vertices not in ccw order, reverse 
-        if !self.poly_vertices_ccw() {
+        if !self.poly_vertices_ccw() && !self.changed_orientation {
+            self.changed_orientation = true;
             self.vertices.reverse();
             self.initialise_triangulation();
         }
@@ -376,7 +378,6 @@ impl Poly {
         let mut convex_hull_iter = self.triangulation.infinite_face().adjacent_edges();
        
         let first_edge = convex_hull_iter.nth(0);
-        
         
         let mut first_vertex =  first_edge.unwrap().from().fix();
         let mut second_vertex = first_edge.unwrap().to().fix();
