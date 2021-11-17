@@ -17,7 +17,7 @@ pub struct Poly {
 }
 
 impl Poly {
-    /// Triangulates the Poly in place.  Uses constrained Delaunay as
+    /// Triangulates the Poly in place.  Uses constrained Delaunay 
     /// from the spade crate.
     /// The resulting triangles are stored in the triangles field of Poly
     pub fn triang(&mut self) {
@@ -33,7 +33,8 @@ impl Poly {
 
         // Need to collect and remove the "bad edges" of the triangulation
         // They occur because the triangulation is of the convex hull of
-        // the poly vertices.
+        // the poly vertices so there will be some triangulation edges 
+        // outside the polygon.
         let mut convex_hull: Vec<usize> = vec![];
         let convex_hull_iter = self.triangulation.infinite_face().adjacent_edges();
         for edge in convex_hull_iter {
@@ -355,10 +356,16 @@ impl Poly {
         }
 
         // add polygon edges as constraints in the CDT
-        for (idx, v) in self.vertices.iter().enumerate() {
-            let w = self.vertices[(idx + 1) % self.vertices.len()];
-            self.triangulation
-                .add_constraint_edge(Point2::new(v[0], v[1]), Point2::new(w[0], w[1]));
+        for idx in 0..self.vertices.len() {
+            let next_idx = (idx + 1) % self.vertices.len();
+            if self.triangulation.can_add_constraint(idx, next_idx) {
+                self.triangulation.add_constraint(idx, next_idx);
+            }
+            else {
+                println!("Cannot have intersecting polygon edges. Press clear and start again");
+                break;
+               
+            }
         }
     }
     
