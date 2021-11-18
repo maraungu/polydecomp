@@ -4,7 +4,7 @@ Polydecomp is a web app for drawing [simple polygons](https://en.wikipedia.org/w
 
 ## Intro
 
-The user interface of the app uses the [egui UI library](https://github.com/emilk/egui#demo) and the [eframe framework](https://github.com/emilk/eframe_template) for web apps.  The `main` and `lib` files (for running natively and for compiling to `wasm`, respectively) are in the `egui-app`, while the `egui-lib` folder contains the app interface and drawing files.  The backend runs the constrained Delaunay triangulation algorithm of the [spade](https://docs.rs/crate/spade/1.8.2) crate and relies on an implementation of the [Hertel-Mehlhorn](https://people.mpi-inf.mpg.de/~mehlhorn/ftp/FastTriangulation.pdf) (HM) algorithm for convex decomposition of a simple polygon to be found in the `polygon` folder.
+The user interface of the app uses the [egui UI library](https://github.com/emilk/egui) and the [eframe framework](https://github.com/emilk/eframe_template) for web apps.  The `main` and `lib` files (for running natively and for compiling to `wasm`, respectively) are in the `egui-app`, while the `egui-lib` folder contains the app interface and drawing files.  The backend runs the constrained Delaunay triangulation algorithm of the [spade](https://docs.rs/crate/spade/1.8.2) crate and relies on an implementation of the [Hertel-Mehlhorn](https://people.mpi-inf.mpg.de/~mehlhorn/ftp/FastTriangulation.pdf) (HM) algorithm for convex decomposition of a simple polygon to be found in the `polygon` folder.
 
 ## Setup
 
@@ -12,7 +12,7 @@ To run natively, navigate to the root directory of the project and type `cargo r
 
 To view in the browser, see the GitPage of the project here:
 
-To test locally and/or recompile to `wasm`, follow the instructions here.
+To test locally and/or recompile to `wasm`, follow the instructions [here](https://github.com/emilk/eframe_template#compiling-for-the-web).
 
 ## How to use
 1. Draw a simple polygon by clicking on the canvas or load one of the availabe polygons.
