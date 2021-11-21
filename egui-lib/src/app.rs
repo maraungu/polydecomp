@@ -166,6 +166,17 @@ impl epi::App for DecompApp {
                     }
                 });
 
+                ui.separator();
+                egui::Grid::new("howto").min_col_width(0.0).show(ui, |ui| {
+                    ui.heading("how to use");
+                    ui.end_row();
+                    ui.label("1. draw or load polygon");
+                    ui.end_row();
+                    ui.label("2. show triangulation");
+                    ui.end_row();
+                    ui.label("3. show essential edges or convex parts");
+                });
+
                 ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
                     ui.horizontal(|ui| {
                         ui.spacing_mut().item_spacing.x = 0.0;
