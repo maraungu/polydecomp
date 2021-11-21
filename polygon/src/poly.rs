@@ -430,16 +430,16 @@ impl Poly {
     ) -> bool {
         // direction is ccw
 
-        let ax = prev_poly_vertex.x;
-        let ay = prev_poly_vertex.y;
-        let bx = vertex.x;
-        let by = vertex.y;
-        let cx = next_poly_vertex.x;
-        let cy = next_poly_vertex.y;
+        let a_x = prev_poly_vertex.x;
+        let a_y = prev_poly_vertex.y;
+        let b_x = vertex.x;
+        let b_y = vertex.y;
+        let c_x = next_poly_vertex.x;
+        let c_y = next_poly_vertex.y;
 
-        let det = (bx - ax) * (cy - by) - (cx - bx) * (by - ay);
+        let determinant = (b_x - a_x) * (c_y - b_y) - (c_x - b_x) * (b_y - a_y);
 
-        if det > 0.0 {
+        if determinant > 0.0 {
             true
         } else {
             false

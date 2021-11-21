@@ -8,9 +8,9 @@ The user interface of the app uses the [egui UI library](https://github.com/emil
 
 ## Setup
 
-To run natively, navigate to the root directory of the project and type `cargo run --release`.
+To view in the browser, see the GitPage of the project [here](https://maraungu.github.io/polydecomp/).
 
-To view in the browser, see the GitPage of the project here:
+To run natively, navigate to the root directory of the project and type `cargo run --release`.  To do this one needs to have the Rust toolchain installed.
 
 To test locally and/or recompile to `wasm`, follow the instructions [here](https://github.com/emilk/eframe_template#compiling-for-the-web).
 
